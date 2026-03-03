@@ -18,7 +18,9 @@ export async function copyStaticAssets(
     await Deno.stat(staticPath);
   } catch {
     if (options.verbose) {
-      console.log(`📁 No static directory found (${staticDir}), skipping asset copy`);
+      console.log(
+        `📁 No static directory found (${staticDir}), skipping asset copy`,
+      );
     }
     return 0;
   }

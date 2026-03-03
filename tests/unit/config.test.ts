@@ -6,8 +6,8 @@ Deno.test("loadConfig - default config", async () => {
   // For now, just test the default config structure
   const defaultConfig = {
     contentDir: "content",
-    templateDir: "templates", 
-    outputDir: "dist"
+    templateDir: "templates",
+    outputDir: "dist",
   };
 
   const validated = validateConfig({});
@@ -19,7 +19,7 @@ Deno.test("loadConfig - default config", async () => {
 Deno.test("validateConfig - partial config", () => {
   const partialConfig = {
     contentDir: "custom_content",
-    outputDir: "build"
+    outputDir: "build",
   };
 
   const validated = validateConfig(partialConfig);

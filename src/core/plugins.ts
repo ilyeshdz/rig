@@ -407,7 +407,7 @@ export class PluginManager {
   }
 }
 
-export const globalPluginManager = new PluginManager();
+export const globalPluginManager: PluginManager = new PluginManager();
 
 // Re-export types for use in other modules
 export type {

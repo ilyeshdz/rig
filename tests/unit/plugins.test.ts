@@ -1,13 +1,13 @@
 import { assertEquals, assertExists } from "@std/assert";
 import {
-  PluginManager,
-  Plugin,
-  PluginManifest,
-  validatePlugin,
-  normalizePlugin,
   createPluginError,
-  RIG_VERSION,
   HOOK_NAMES,
+  normalizePlugin,
+  Plugin,
+  PluginManager,
+  PluginManifest,
+  RIG_VERSION,
+  validatePlugin,
 } from "../../src/core/plugins.ts";
 import { Config } from "../../src/types/index.ts";
 
@@ -19,31 +19,31 @@ Deno.test("PluginManager - creates instance", () => {
 
 Deno.test("PluginManager - registers plugin from object", () => {
   const pm = new PluginManager();
-  
+
   const testPlugin: Plugin = {
     name: "test-plugin",
     version: "1.0.0",
     description: "A test plugin",
     init: async () => {},
   };
-  
+
   pm.register(testPlugin);
-  
+
   assertEquals(pm.count, 1);
   assertExists(pm.getPlugin("test-plugin"));
 });
 
 Deno.test("PluginManager - registers plugin from manifest", () => {
   const pm = new PluginManager();
-  
+
   const manifest: PluginManifest = {
     name: "manifest-plugin",
     version: "2.0.0",
     description: "A manifest plugin",
   };
-  
+
   pm.register(manifest);
-  
+
   assertEquals(pm.count, 1);
   const plugin = pm.getPlugin("manifest-plugin");
   assertExists(plugin);
@@ -52,16 +52,16 @@ Deno.test("PluginManager - registers plugin from manifest", () => {
 
 Deno.test("PluginManager - unregisters plugin", () => {
   const pm = new PluginManager();
-  
+
   const plugin: Plugin = {
     name: "remove-me",
     version: "1.0.0",
     description: "To be removed",
   };
-  
+
   pm.register(plugin);
   assertEquals(pm.count, 1);
-  
+
   const removed = pm.unregister("remove-me");
   assertEquals(removed, true);
   assertEquals(pm.count, 0);
@@ -69,17 +69,17 @@ Deno.test("PluginManager - unregisters plugin", () => {
 
 Deno.test("PluginManager - lists plugins", () => {
   const pm = new PluginManager();
-  
+
   pm.register({ name: "plugin-a", version: "1.0.0", description: "A" });
   pm.register({ name: "plugin-b", version: "1.0.0", description: "B" });
-  
+
   const plugins = pm.listPlugins();
   assertEquals(plugins.length, 2);
 });
 
 Deno.test("PluginManager - hasHook returns correct value", () => {
   const pm = new PluginManager();
-  
+
   const plugin: Plugin = {
     name: "hook-plugin",
     version: "1.0.0",
@@ -87,9 +87,9 @@ Deno.test("PluginManager - hasHook returns correct value", () => {
     beforeBuild: async () => {},
     afterBuild: async () => {},
   };
-  
+
   pm.register(plugin);
-  
+
   assertEquals(pm.hasHook("beforeBuild"), true);
   assertEquals(pm.hasHook("afterBuild"), true);
   assertEquals(pm.hasHook("init"), false);
@@ -98,7 +98,7 @@ Deno.test("PluginManager - hasHook returns correct value", () => {
 Deno.test("PluginManager - executeHook runs handlers", async () => {
   const pm = new PluginManager();
   let executed = false;
-  
+
   const plugin: Plugin = {
     name: "exec-plugin",
     version: "1.0.0",
@@ -107,10 +107,13 @@ Deno.test("PluginManager - executeHook runs handlers", async () => {
       executed = true;
     },
   };
-  
+
   pm.register(plugin);
-  await pm.executeHook("init", { config: {} as Config, rigVersion: RIG_VERSION });
-  
+  await pm.executeHook("init", {
+    config: {} as Config,
+    rigVersion: RIG_VERSION,
+  });
+
   assertEquals(executed, true);
 });
 
@@ -120,7 +123,7 @@ Deno.test("validatePlugin - validates correct plugin", () => {
     version: "1.0.0",
     description: "Valid",
   };
-  
+
   assertEquals(validatePlugin(valid), true);
 });
 
@@ -138,9 +141,9 @@ Deno.test("normalizePlugin - converts manifest to plugin", () => {
     description: "Normalized plugin",
     author: "Test Author",
   };
-  
+
   const plugin = normalizePlugin(manifest);
-  
+
   assertEquals(plugin.name, "normalized");
   assertEquals(plugin.version, "3.0.0");
   assertEquals(plugin.author, "Test Author");
@@ -148,7 +151,7 @@ Deno.test("normalizePlugin - converts manifest to plugin", () => {
 
 Deno.test("createPluginError - creates typed error", () => {
   const error = createPluginError("Test error", "my-plugin", "init", "E001");
-  
+
   assertEquals(error.message, "Test error");
   assertEquals(error.pluginName, "my-plugin");
   assertEquals(error.hookName, "init");
@@ -172,7 +175,7 @@ Deno.test("HOOK_NAMES - contains all expected hooks", () => {
     "afterServe",
     "destroy",
   ];
-  
+
   assertEquals(HOOK_NAMES.length, expected.length);
   expected.forEach((hook) => {
     assertEquals(HOOK_NAMES.includes(hook as any), true);
@@ -181,7 +184,7 @@ Deno.test("HOOK_NAMES - contains all expected hooks", () => {
 
 Deno.test("PluginManager - getHookCount returns correct count", () => {
   const pm = new PluginManager();
-  
+
   const plugin: Plugin = {
     name: "count-plugin",
     version: "1.0.0",
@@ -189,9 +192,9 @@ Deno.test("PluginManager - getHookCount returns correct count", () => {
     beforeBuild: async () => {},
     afterBuild: async () => {},
   };
-  
+
   pm.register(plugin);
-  
+
   assertEquals(pm.getHookCount("beforeBuild"), 1);
   assertEquals(pm.getHookCount("afterBuild"), 1);
   assertEquals(pm.getHookCount("init"), 0);
@@ -199,11 +202,21 @@ Deno.test("PluginManager - getHookCount returns correct count", () => {
 
 Deno.test("PluginManager - listByHook returns plugins with hook", () => {
   const pm = new PluginManager();
-  
-  pm.register({ name: "a", version: "1.0.0", description: "A", beforeBuild: async () => {} });
-  pm.register({ name: "b", version: "1.0.0", description: "B", afterBuild: async () => {} });
+
+  pm.register({
+    name: "a",
+    version: "1.0.0",
+    description: "A",
+    beforeBuild: async () => {},
+  });
+  pm.register({
+    name: "b",
+    version: "1.0.0",
+    description: "B",
+    afterBuild: async () => {},
+  });
   pm.register({ name: "c", version: "1.0.0", description: "C" });
-  
+
   const withBeforeBuild = pm.listByHook("beforeBuild");
   assertEquals(withBeforeBuild.length, 1);
   assertEquals(withBeforeBuild[0].name, "a");

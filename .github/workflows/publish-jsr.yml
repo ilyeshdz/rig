@@ -1,0 +1,73 @@
+name: Publish to JSR
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: publish-jsr-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Validate and Publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Deno format (check)
+        run: deno fmt --check
+
+      - name: Deno check
+        run: deno check src/main.ts tests/test-runner.ts
+
+      - name: Deno test
+        run: deno task test
+
+      - name: Deno bench
+        run: deno task bench
+
+      - name: Detect package version
+        id: version
+        run: |
+          current_version="$(deno eval 'const cfg = JSON.parse(Deno.readTextFileSync("deno.json")); console.log(cfg.version ?? "");')"
+          previous_version="$(
+            git show HEAD^:deno.json 2>/dev/null \
+              | deno eval 'const txt = await new Response(Deno.stdin.readable).text(); console.log(JSON.parse(txt).version ?? "");' 2>/dev/null \
+              || true
+          )"
+
+          should_publish="true"
+          if [ -n "$previous_version" ] && [ "$current_version" = "$previous_version" ]; then
+            should_publish="false"
+          fi
+
+          echo "current=$current_version" >> "$GITHUB_OUTPUT"
+          echo "previous=$previous_version" >> "$GITHUB_OUTPUT"
+          echo "should_publish=$should_publish" >> "$GITHUB_OUTPUT"
+
+      - name: Skip message (no new version)
+        if: steps.version.outputs.should_publish != 'true'
+        run: |
+          echo "Skipping JSR publish: deno.json version unchanged."
+          echo "Current:  ${{ steps.version.outputs.current }}"
+          echo "Previous: ${{ steps.version.outputs.previous }}"
+
+      - name: Publish to JSR
+        if: steps.version.outputs.should_publish == 'true'
+        run: deno publish

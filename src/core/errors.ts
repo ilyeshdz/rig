@@ -2,7 +2,7 @@ export class RigError extends Error {
   constructor(
     message: string,
     public readonly code: string,
-    public readonly context?: Record<string, unknown>
+    public readonly context?: Record<string, unknown>,
   ) {
     super(message);
     this.name = "RigError";
@@ -44,7 +44,7 @@ export function isRigError(error: unknown): error is RigError {
 export function createErrorContext(
   operation: string,
   config?: Record<string, unknown>,
-  additional?: Record<string, unknown>
+  additional?: Record<string, unknown>,
 ): Record<string, unknown> {
   return {
     operation,

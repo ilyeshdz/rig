@@ -6,21 +6,29 @@ export const initCommand = new Command()
   .name("init")
   .description("Initialize a new Rig site")
   .option("-f, --force", "Force overwrite existing files")
-  .option("--content-dir <dir:string>", "Content directory", { default: "content" })
-  .option("--template-dir <dir:string>", "Template directory", { default: "templates" })
+  .option("--content-dir <dir:string>", "Content directory", {
+    default: "content",
+  })
+  .option("--template-dir <dir:string>", "Template directory", {
+    default: "templates",
+  })
   .option("--output-dir <dir:string>", "Output directory", { default: "dist" })
   .action(async (options) => {
     try {
       console.log("🚀 Initializing new Rig site...");
-      
+
       const config = validateConfig({
         contentDir: options.contentDir,
         templateDir: options.templateDir,
         outputDir: options.outputDir,
       });
 
-      const directories = [config.contentDir, config.templateDir, config.outputDir];
-      
+      const directories = [
+        config.contentDir,
+        config.templateDir,
+        config.outputDir,
+      ];
+
       for (const dir of directories) {
         try {
           await Deno.mkdir(dir, { recursive: true });
@@ -83,7 +91,10 @@ export const initCommand = new Command()
 </html>`;
 
       try {
-        await Deno.writeTextFile(`${config.templateDir}/layout.html`, basicTemplate);
+        await Deno.writeTextFile(
+          `${config.templateDir}/layout.html`,
+          basicTemplate,
+        );
         console.log(`📄 Created template: ${config.templateDir}/layout.html`);
       } catch (error) {
         if (!(error instanceof Deno.errors.AlreadyExists) || options.force) {
@@ -94,7 +105,7 @@ export const initCommand = new Command()
       // Create a sample content file
       const sampleContent = `---
 title: "Welcome to Rig"
-date: "${new Date().toISOString().split('T')[0]}"
+date: "${new Date().toISOString().split("T")[0]}"
 ---
 
 # Welcome to Rig
@@ -126,7 +137,10 @@ rig dev
 Happy building! 🎉`;
 
       try {
-        await Deno.writeTextFile(`${config.contentDir}/index.md`, sampleContent);
+        await Deno.writeTextFile(
+          `${config.contentDir}/index.md`,
+          sampleContent,
+        );
         console.log(`📝 Created sample content: ${config.contentDir}/index.md`);
       } catch (error) {
         if (!(error instanceof Deno.errors.AlreadyExists) || options.force) {
@@ -136,12 +150,19 @@ Happy building! 🎉`;
 
       console.log("\n✅ Rig site initialized successfully!");
       console.log("📋 Next steps:");
-      console.log(`  📝 Edit content files in the '${config.contentDir}' directory`);
-      console.log(`  🎨 Customize templates in the '${config.templateDir}' directory`);
+      console.log(
+        `  📝 Edit content files in the '${config.contentDir}' directory`,
+      );
+      console.log(
+        `  🎨 Customize templates in the '${config.templateDir}' directory`,
+      );
       console.log(`  🔨 Run 'rig build' to generate your site`);
       console.log(`  🚀 Run 'rig dev' to start development mode`);
     } catch (error) {
-      console.error("❌ Initialization failed:", error instanceof Error ? error.message : String(error));
+      console.error(
+        "❌ Initialization failed:",
+        error instanceof Error ? error.message : String(error),
+      );
       Deno.exit(1);
     }
   });

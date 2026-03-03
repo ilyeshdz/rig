@@ -1,7 +1,7 @@
 import { Command } from "@cliffy/command";
 import { loadConfig } from "../core/config.ts";
 import { Builder } from "../core/builder.ts";
-import { startServer, type DevServerController } from "../core/server.ts";
+import { type DevServerController, startServer } from "../core/server.ts";
 
 export const buildCommand = new Command()
   .name("build")

@@ -3,7 +3,7 @@ import { ConfigError, createErrorContext } from "./errors.ts";
 
 export function validateConfig(config: Partial<Config>): Config {
   const errors: string[] = [];
-  
+
   // Validate contentDir
   if (config.contentDir) {
     if (typeof config.contentDir !== "string") {
@@ -14,7 +14,7 @@ export function validateConfig(config: Partial<Config>): Config {
       errors.push("contentDir contains invalid characters");
     }
   }
-  
+
   // Validate templateDir
   if (config.templateDir) {
     if (typeof config.templateDir !== "string") {
@@ -25,7 +25,7 @@ export function validateConfig(config: Partial<Config>): Config {
       errors.push("templateDir contains invalid characters");
     }
   }
-  
+
   // Validate outputDir
   if (config.outputDir) {
     if (typeof config.outputDir !== "string") {
@@ -36,25 +36,25 @@ export function validateConfig(config: Partial<Config>): Config {
       errors.push("outputDir contains invalid characters");
     }
   }
-  
+
   if (errors.length > 0) {
     const context = createErrorContext("validateConfig", { config });
     throw new ConfigError(
       `Configuration validation failed:\n${errors.join("\n")}`,
-      "validation"
+      "validation",
     );
   }
-  
+
   return {
     contentDir: config.contentDir || "content",
-    templateDir: config.templateDir || "templates", 
+    templateDir: config.templateDir || "templates",
     outputDir: config.outputDir || "dist",
   };
 }
 
 export async function validatePaths(config: Config): Promise<void> {
   const paths = [config.contentDir, config.templateDir, config.outputDir];
-  
+
   for (const path of paths) {
     try {
       const parentDir = path.split("/").slice(0, -1).join("/");
@@ -67,7 +67,7 @@ export async function validatePaths(config: Config): Promise<void> {
         const context = createErrorContext("validatePaths", { config, path });
         throw new ConfigError(
           `Parent directory does not exist: ${parentDir}`,
-          "path_validation"
+          "path_validation",
         );
       }
     }

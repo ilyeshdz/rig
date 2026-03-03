@@ -11,7 +11,7 @@ Deno.test("Builder - integration test", async () => {
 
   await Deno.mkdir(contentDir);
   await Deno.mkdir(templateDir);
-  
+
   // Create test template
   const template = `<!DOCTYPE html>
 <html>
@@ -19,7 +19,7 @@ Deno.test("Builder - integration test", async () => {
 <body><main><%= content %></main></body>
 </html>`;
   await Deno.writeTextFile(`${templateDir}/layout.html`, template);
-  
+
   // Create test content
   const content = `---
 title: "Test Page"
@@ -33,19 +33,19 @@ This is a test.`;
   try {
     const config = { contentDir, templateDir, outputDir };
     const builder = new Builder(config);
-    
+
     await builder.build({ config, clean: true, verbose: false });
-    
+
     // Verify output
     const outputPath = `${outputDir}/test-page.html`;
     const output = await Deno.readTextFile(outputPath);
-    
+
     // Check if template was rendered correctly
     assertEquals(output.includes("<title>Test Page</title>"), true);
     assertEquals(output.includes("<h1>Hello World</h1>"), true);
     assertEquals(output.includes("<main>"), true);
     assertEquals(output.includes("Hello World"), true);
-    
+
     console.log("✅ Integration test passed");
   } finally {
     // Cleanup
