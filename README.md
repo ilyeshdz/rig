@@ -2,79 +2,75 @@
 
 # Rig
 
-**A fast, opinionated static site generator built with Deno.**
+A static site generator for people who want simple content workflows, fast
+builds, and an extensible plugin system.
 
 [![Deno](https://img.shields.io/badge/Deno-fff?logo=deno)](https://deno.land)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?logo=typescript)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Test](https://img.shields.io/badge/tests-14%20passed-brightgreen)](#testing)
 
 </div>
 
----
+## What Rig Is
 
-## Why Rig?
+Rig is a Markdown-first static site generator built with Deno and TypeScript.
 
-Rig is a modern static site generator that prioritizes **speed**, **simplicity**, and **developer experience**. Built from the ground up with Deno, it brings native TypeScript support, modern tooling, and excellent performance out of the box.
+You write content in `.md`, use a layout template, and Rig generates static HTML
+files in `dist/`.
 
-### Key Features
+It is intentionally small and explicit: easy to understand, easy to change, easy
+to extend.
 
-- 🚀 **Blazing Fast** — Sub-millisecond template rendering with optimized build pipeline
-- 📝 **Markdown First** — Write content in Markdown with full frontmatter support
-- 🎨 **Custom Template Engine** — Simple yet powerful templating with conditionals and loops
-- 🔌 **Plugin System** — Extensible architecture with lifecycle hooks
-- 📁 **Modular Architecture** — Clean, maintainable codebase
-- 🧪 **Full Test Suite** — Unit, integration, and benchmark tests included
+## Why You Might Use It
 
----
+- You want a straightforward static generator without a lot of framework
+  ceremony.
+- You prefer TypeScript + Deno tooling.
+- You want plugin hooks for things like feeds, sitemaps, pagination, and
+  taxonomy pages.
+- You care about fast local feedback while writing content.
+
+## Core Features
+
+- Markdown content with frontmatter support
+- Lightweight template syntax (variables, conditionals, loops)
+- Plugin lifecycle hooks
+- Official plugins:
+  - `sitemap` for `sitemap.xml`
+  - `rss` for RSS feed generation
+  - `pagination` for paginated collection pages
+  - `taxonomy` for tags/categories pages
+- Unit, integration, and benchmark coverage
 
 ## Quick Start
 
 ```bash
-# Install Deno (if you haven't)
+# Install dependencies (Deno)
 curl -fsSL https://deno.land/install.sh | sh
 
-# Run the development server
-deno run --watch src/main.ts
+# Run tests
+deno task test
 
-# Or use the CLI after installation
-rig init my-site
-cd my-site
-rig dev
+# Run all benchmarks
+deno task bench
 ```
 
----
+## Typical Project Layout
 
-## Project Structure
-
-```
+```txt
 rig/
 ├── src/
-│   ├── main.ts              # CLI entry point
-│   ├── types/               # TypeScript type definitions
-│   ├── core/                # Core functionality
-│   │   ├── builder.ts       # Build & watch engine
-│   │   ├── config.ts        # Configuration management
-│   │   ├── parser.ts        # Markdown & frontmatter parser
-│   │   ├── template.ts      # Template rendering engine
-│   │   ├── errors.ts        # Custom error classes
-│   │   ├── plugins.ts       # Plugin system
-│   │   └── validation.ts    # Config validation
-│   └── commands/             # CLI commands
-│       ├── build.ts         # Build & dev commands
-│       └── init.ts          # Project initialization
-├── tests/                    # Test suite
-│   ├── unit/                # Unit tests
-│   ├── integration/         # Integration tests
-│   └── benchmarks/          # Performance benchmarks
-├── playground/              # Example project
-│   ├── content/             # Sample markdown content
-│   └── templates/           # Sample templates
-├── deno.json               # Deno configuration
+│   ├── core/          # parser, builder, template engine, plugins, collections
+│   ├── commands/      # CLI commands
+│   └── plugins/       # official plugins
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   └── benchmarks/
+├── playground/
+├── deno.json
 └── README.md
 ```
-
----
 
 ## Configuration
 
@@ -90,18 +86,6 @@ Configure Rig in `deno.json`:
 }
 ```
 
-### CLI Options
-
-```bash
-rig build           # Build for production
-rig build --verbose # Verbose output
-rig dev             # Development mode with hot reload
-rig dev --port 3000 # Custom port
-rig dev --open      # Auto-open browser
-```
-
----
-
 ## Template Syntax
 
 ### Variables
@@ -115,7 +99,7 @@ rig dev --open      # Auto-open browser
 
 ```html
 <% if (showSidebar) %>
-  <aside>Sidebar content</aside>
+<aside>Sidebar content</aside>
 <% endif %>
 ```
 
@@ -123,85 +107,75 @@ rig dev --open      # Auto-open browser
 
 ```html
 <ul>
-<% for (item in items) %>
+  <% for (item in items) %>
   <li><%= item.name %></li>
-<% endfor %>
+  <% endfor %>
 </ul>
 ```
 
----
+## Performance In Real Use
 
-## Performance
+Benchmarks are useful, but what matters is day-to-day behavior:
 
-Rig is designed for speed. Here's what you can expect:
+- While writing content, rebuilds are fast enough to keep your flow intact
+  instead of waiting on tooling.
+- For small and medium sites, full builds generally feel near-instant to very
+  quick on modern laptops.
+- As content volume grows, build time increases in a predictable way rather than
+  exploding suddenly.
+- Plugin hook overhead is low, so adding official plugins does not usually make
+  builds feel heavy.
 
-### Core Operations (per operation)
+How to read this as a developer:
 
-| Operation | Time | Throughput |
-|-----------|------|------------|
-| Markdown Parsing | ~946µs | 1,057 ops/sec |
-| Template Rendering | ~581µs | 1,722 ops/sec |
-| Full Build (10 files) | ~2.5ms | 397 ops/sec |
+- Rig is optimized for fast iteration loops (edit -> build -> review).
+- You can scale from a handful of pages to larger collections without needing
+  architecture changes immediately.
+- Benchmark numbers should be treated as directional signals, not hard
+  guarantees for every machine/project.
 
-### Site Scalability
-
-| Site Size | Files | Avg Time/File | Throughput |
-|-----------|-------|---------------|------------|
-| Small | 10 | ~2.5ms | 400/sec |
-| Medium | 100 | ~3.2ms | 312/sec |
-| Large | 1000 | ~4.1ms | 244/sec |
-
-### Plugin System
-
-The plugin system is highly optimized:
-
-| Operation | Time | Throughput |
-|-----------|------|------------|
-| Create PluginManager | ~265µs | 3,776/sec |
-| Register 1 plugin | ~15ms | 68/sec |
-| Register 10 plugins | ~485µs | 2,061/sec |
-| executeHook (no plugins) | ~57µs | 17,680/sec |
-| executeHook (1 plugin) | ~108µs | 9,229/sec |
-| executeHook (5 plugins) | ~166µs | 6,022/sec |
-| getPlugin lookup | ~3.1µs | 323,800/sec |
-| hasHook check | ~151µs | 6,625/sec |
-
----
-
-## Testing
+## Testing and Benchmarks
 
 ```bash
-# Run all tests
-deno test tests/ --allow-read --allow-write --allow-env
+# Test suite
+deno task test
 
-# Run benchmarks
-deno bench tests/benchmarks/              # All benchmarks
-deno bench tests/benchmarks/deno-native.test.ts  # Core operations
-deno bench tests/benchmarks/plugins.test.ts       # Plugin system
+# All benchmarks
+deno task bench
+
+# Core parsing/rendering benchmarks
+deno task bench:core
+
+# Official plugin benchmarks
+deno task bench:plugins
+
+# Plugin manager internals
+deno task bench:manager
 ```
 
----
+## Documentation Site
+
+Rig now includes a Docusaurus site in `docs/`.
+
+```bash
+cd docs
+npm install
+npm run start
+```
+
+This site includes guides for setup, configuration, templating, plugins,
+incremental dev with HMR, testing, architecture, and contribution workflow.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome.
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feat/amazing-feature`)
-3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
-4. Push to the branch (`git push origin feat/amazing-feature`)
-5. Open a Pull Request
-
----
+2. Create a feature branch (`git checkout -b feat/your-change`)
+3. Commit your changes (`git commit -m 'feat: add X'`)
+4. Push to your branch
+5. Open a pull request
 
 ## License
 
-MIT License — see [LICENSE](LICENSE) for details.
-
----
-
-<div align="center">
-
-**Built with ❤️ using Deno**
-
-</div>
+MIT License — see [LICENSE](LICENSE).
