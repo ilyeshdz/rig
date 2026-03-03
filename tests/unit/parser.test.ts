@@ -11,12 +11,16 @@ date: "2026-03-03"
 
 This is a test markdown file.`;
 
-  const result = parseFrontMatter(content);
+  const result = parseFrontMatter(content, "test.md");
 
   assertEquals(result.frontMatter.title, "Test Post");
   assertEquals(result.frontMatter.date, "2026-03-03");
   assertEquals(result.slug, "test-post");
-  assertEquals(result.content, "# Test Content\n\nThis is a test markdown file.");
+  assertEquals(result.filePath, "test.md");
+  assertEquals(
+    result.content,
+    "# Test Content\n\nThis is a test markdown file.",
+  );
 });
 
 Deno.test("parseFrontMatter - no frontmatter", () => {
@@ -24,28 +28,33 @@ Deno.test("parseFrontMatter - no frontmatter", () => {
 
 No frontmatter here.`;
 
-  const result = parseFrontMatter(content);
+  const result = parseFrontMatter(content, "simple.md");
 
   assertEquals(result.frontMatter, {});
   assertEquals(result.slug, "untitled");
+  assertEquals(result.filePath, "simple.md");
   assertEquals(result.content, "# Simple Content\n\nNo frontmatter here.");
 });
 
-Deno.test("parseFrontMatter - complex frontmatter", () => {
+Deno.test("parseFrontMatter - parses typed fields", () => {
   const content = `---
 title: "Complex Post"
 date: "2026-03-03"
 author: "John Doe"
 tags: "web, development"
+draft: true
+priority: 0.9
 ---
 
 # Complex Content`;
 
-  const result = parseFrontMatter(content);
+  const result = parseFrontMatter(content, "complex.md");
 
   assertEquals(result.frontMatter.title, "Complex Post");
   assertEquals(result.frontMatter.date, "2026-03-03");
   assertEquals(result.frontMatter.author, "John Doe");
-  assertEquals(result.frontMatter.tags, "web, development");
+  assertEquals(result.frontMatter.tags, ["web", "development"]);
+  assertEquals(result.frontMatter.draft, true);
+  assertEquals(result.frontMatter.priority, 0.9);
   assertEquals(result.slug, "complex-post");
 });

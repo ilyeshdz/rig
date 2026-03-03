@@ -1,0 +1,236 @@
+import type { Plugin, PluginBuildContext } from "../core/plugins.ts";
+import type { BuildResult, Taxonomy, TaxonomyTerm } from "../types/index.ts";
+import { CollectionManager } from "../core/collections.ts";
+
+export interface TaxonomyOptions {
+  collections?: string[];
+  taxonomies?: string[];
+  template?: string;
+  indexPath?: string;
+  termPath?: string;
+  generateTagPages?: boolean;
+  generateCategoryPages?: boolean;
+}
+
+export function createTaxonomyPlugin(options: TaxonomyOptions = {}): Plugin {
+  const {
+    collections = ["blog", "posts"],
+    taxonomies = ["tags", "categories"],
+    template: _template = "taxonomy",
+    indexPath = "{taxonomy}/index.html",
+    termPath = "{taxonomy}/{term}/index.html",
+    generateTagPages = true,
+    generateCategoryPages = true,
+  } = options;
+
+  return {
+    name: "taxonomy",
+    version: "1.0.0",
+    description: "Generate taxonomy pages for tags and categories",
+
+    async afterBuild(context: PluginBuildContext & { result: BuildResult }) {
+      const { config, files, result } = context;
+
+      if (!result.success) {
+        return;
+      }
+
+      const collectionManager = new CollectionManager(config);
+      const allCollections = collectionManager.processCollections(files);
+
+      // Filter collections that need taxonomy pages
+      const targetCollections = allCollections.filter((collection) =>
+        collections.includes(collection.name)
+      );
+
+      if (targetCollections.length === 0) {
+        console.log("🏷️ No collections found for taxonomy generation");
+        return;
+      }
+
+      let totalGenerated = 0;
+
+      for (const collection of targetCollections) {
+        for (const taxonomyType of taxonomies) {
+          // Skip if taxonomy generation is disabled for this type
+          if (taxonomyType === "tags" && !generateTagPages) continue;
+          if (taxonomyType === "categories" && !generateCategoryPages) continue;
+
+          const taxonomy = collectionManager.createTaxonomy(
+            collection,
+            taxonomyType === "categories" ? "category" : "tags",
+          );
+
+          if (taxonomy.terms.length === 0) {
+            console.log(
+              `🏷️ No ${taxonomyType} found in ${collection.name} collection`,
+            );
+            continue;
+          }
+
+          // Generate taxonomy index page
+          const taxonomyIndexPath = indexPath.replace(
+            "{taxonomy}",
+            taxonomyType,
+          );
+          const taxonomyIndexHtml = generateTaxonomyIndexHtml(
+            taxonomy,
+            taxonomyType,
+            collection.name,
+          );
+          const taxonomyIndexFullPath =
+            `${config.outputDir}/${taxonomyIndexPath}`;
+          await Deno.mkdir(
+            taxonomyIndexFullPath.split("/").slice(0, -1).join("/"),
+            { recursive: true },
+          );
+          await Deno.writeTextFile(taxonomyIndexFullPath, taxonomyIndexHtml);
+          totalGenerated++;
+
+          // Generate individual term pages
+          for (const term of taxonomy.terms) {
+            const termPagePath = termPath
+              .replace("{taxonomy}", taxonomyType)
+              .replace("{term}", term.slug);
+
+            const termHtml = generateTaxonomyTermHtml(
+              term,
+              taxonomyType,
+              collection.name,
+            );
+            const termFullPath = `${config.outputDir}/${termPagePath}`;
+            await Deno.mkdir(termFullPath.split("/").slice(0, -1).join("/"), {
+              recursive: true,
+            });
+            await Deno.writeTextFile(termFullPath, termHtml);
+            totalGenerated++;
+          }
+
+          console.log(
+            `🏷️ Generated ${
+              taxonomy.terms.length + 1
+            } ${taxonomyType} pages for ${collection.name} collection`,
+          );
+        }
+      }
+
+      console.log(`🏷️ Generated ${totalGenerated} taxonomy pages total`);
+    },
+  };
+}
+
+function generateTaxonomyIndexHtml(
+  taxonomy: Taxonomy,
+  taxonomyType: string,
+  collectionName: string,
+): string {
+  const termsList = taxonomy.terms.map((term) => `
+    <li class="taxonomy-term">
+      <a href="/${taxonomyType}/${term.slug}/">
+        <span class="term-name">${term.name}</span>
+        <span class="term-count">${term.count}</span>
+      </a>
+    </li>
+  `).join("");
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${
+    taxonomyType.charAt(0).toUpperCase() + taxonomyType.slice(1)
+  } - ${collectionName}</title>
+</head>
+<body>
+  <header>
+    <h1>${taxonomyType.charAt(0).toUpperCase() + taxonomyType.slice(1)}</h1>
+    <p>Browse ${collectionName} by ${taxonomyType}</p>
+  </header>
+  
+  <main>
+    <div class="taxonomy-cloud">
+      <ul class="terms-list">
+        ${termsList}
+      </ul>
+    </div>
+  </main>
+  
+  <footer>
+    <p>Generated by Rig Static Site Generator</p>
+  </footer>
+</body>
+</html>
+  `.trim();
+}
+
+function generateTaxonomyTermHtml(
+  term: TaxonomyTerm,
+  taxonomyType: string,
+  collectionName: string,
+): string {
+  const items = term.files.map((file) => `
+    <article class="post">
+      <h2><a href="/${file.slug}.html">${
+    file.frontMatter.title || file.slug
+  }</a></h2>
+      <p class="meta">${file.frontMatter.date || ""}</p>
+      ${
+    file.frontMatter.description
+      ? `<p class="description">${file.frontMatter.description}</p>`
+      : ""
+  }
+      ${
+    file.frontMatter.tags
+      ? `
+        <div class="tags">
+          ${
+        (Array.isArray(file.frontMatter.tags)
+          ? file.frontMatter.tags
+          : [file.frontMatter.tags]).map((tag) =>
+            `<span class="tag">${tag}</span>`
+          ).join("")
+      }
+        </div>
+      `
+      : ""
+  }
+    </article>
+  `).join("");
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${term.name} - ${
+    taxonomyType.charAt(0).toUpperCase() + taxonomyType.slice(1)
+  } - ${collectionName}</title>
+</head>
+<body>
+  <header>
+    <h1>${term.name}</h1>
+    <p>${term.count} items tagged with "${term.name}" in ${collectionName}</p>
+    <nav>
+      <a href="/${taxonomyType}/">← Back to ${taxonomyType}</a>
+    </nav>
+  </header>
+  
+  <main>
+    <div class="posts-list">
+      ${items}
+    </div>
+  </main>
+  
+  <footer>
+    <p>Generated by Rig Static Site Generator</p>
+  </footer>
+</body>
+</html>
+  `.trim();
+}
+
+// Export a default plugin instance
+export const taxonomyPlugin = createTaxonomyPlugin();

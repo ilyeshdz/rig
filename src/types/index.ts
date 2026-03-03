@@ -2,18 +2,71 @@ export interface Config {
   contentDir: string;
   templateDir: string;
   outputDir: string;
+  collections?: Record<string, CollectionConfig>;
+}
+
+export interface CollectionConfig {
+  name: string;
+  directory?: string;
+  template?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  paginate?: boolean;
+  perPage?: number;
+  outputPath?: string;
+  excludeDrafts?: boolean;
+}
+
+export interface Collection {
+  name: string;
+  config: CollectionConfig;
+  files: ContentFile[];
+  totalPages?: number;
+}
+
+export interface PaginatedContent {
+  files: ContentFile[];
+  currentPage: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+  nextPagePath?: string;
+  prevPagePath?: string;
+}
+
+export interface TaxonomyTerm {
+  name: string;
+  slug: string;
+  count: number;
+  files: ContentFile[];
+}
+
+export interface Taxonomy {
+  name: string;
+  terms: TaxonomyTerm[];
 }
 
 export interface FrontMatter {
   title?: string;
   date?: string;
-  [key: string]: string | undefined;
+  collection?: string;
+  draft?: boolean | string;
+  tags?: string | string[];
+  category?: string;
+  priority?: number;
+  changefreq?: string;
+  description?: string;
+  author?: string;
+  rss?: string;
+  [key: string]: string | number | boolean | string[] | undefined;
 }
 
 export interface ContentFile {
   frontMatter: FrontMatter;
   content: string;
   slug: string;
+  collection?: string;
+  filePath: string;
 }
 
 export interface BuildOptions {
@@ -65,6 +118,11 @@ export interface WatchEvent {
   type: "add" | "change" | "unlink";
   path: string;
   content?: string;
+}
+
+export interface DevServerUpdate {
+  type: "full-reload" | "page-update" | "asset-update";
+  path?: string;
 }
 
 export interface ValidationResult {

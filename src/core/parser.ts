@@ -1,7 +1,10 @@
 import { marked } from "marked";
 import { ContentFile, FrontMatter } from "../types/index.ts";
 
-export function parseFrontMatter(content: string): ContentFile {
+export function parseFrontMatter(
+  content: string,
+  filePath: string,
+): ContentFile {
   const frontMatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/;
   const match = content.match(frontMatterRegex);
 
@@ -10,6 +13,7 @@ export function parseFrontMatter(content: string): ContentFile {
       frontMatter: {},
       content,
       slug: "untitled",
+      filePath,
     };
   }
 
@@ -20,10 +24,24 @@ export function parseFrontMatter(content: string): ContentFile {
   frontMatterText.split("\n").forEach((line) => {
     const [key, ...valueParts] = line.split(":");
     if (key && valueParts.length > 0) {
-      frontMatter[key.trim()] = valueParts.join(":").trim().replace(
-        /^["']|["']$/g,
-        "",
-      );
+      const value = valueParts.join(":").trim().replace(/^["']|["']$/g, "");
+
+      // Handle special types
+      if (key === "tags" || key === "categories") {
+        // Handle comma-separated tags/categories
+        frontMatter[key.trim()] = value.includes(",")
+          ? value.split(",").map((tag) => tag.trim()).filter((tag) => tag)
+          : value;
+      } else if (key === "draft") {
+        // Handle boolean draft
+        frontMatter[key.trim()] = value === "true";
+      } else if (key === "priority") {
+        // Handle numeric priority
+        const numValue = Number(value);
+        frontMatter[key.trim()] = isNaN(numValue) ? value : numValue;
+      } else {
+        frontMatter[key.trim()] = value;
+      }
     }
   });
 
@@ -35,6 +53,7 @@ export function parseFrontMatter(content: string): ContentFile {
     frontMatter,
     content: markdownContent,
     slug,
+    filePath,
   };
 }
 
@@ -51,7 +70,7 @@ export async function processContentFiles(
     for await (const entry of Deno.readDir(contentDir)) {
       if (entry.isFile && entry.name.endsWith(".md")) {
         const content = await Deno.readTextFile(`${contentDir}/${entry.name}`);
-        const parsed = parseFrontMatter(content);
+        const parsed = parseFrontMatter(content, entry.name);
         contentFiles.push(parsed);
       }
     }
