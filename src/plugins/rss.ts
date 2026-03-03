@@ -1,5 +1,6 @@
 import type { Plugin, PluginBuildContext } from "../core/plugins.ts";
-import type { BuildResult, ContentFile } from "../types/index.ts";
+import type { BuildResult, Config, ContentFile } from "../types/index.ts";
+import { getPublicUrlForSlug } from "../core/routing.ts";
 
 export interface RssOptions {
   title?: string;
@@ -94,6 +95,7 @@ export function createRssPlugin(options: RssOptions = {}): Plugin {
         title,
         description,
         baseUrl,
+        config,
         author,
         language,
         copyright,
@@ -124,6 +126,7 @@ interface RssFeedData {
   title: string;
   description: string;
   baseUrl: string;
+  config: Config;
   author: string;
   language: string;
   copyright?: string;
@@ -140,6 +143,7 @@ function generateRssXml(files: ContentFile[], feedData: RssFeedData): string {
     title,
     description,
     baseUrl,
+    config,
     author,
     language,
     copyright,
@@ -199,8 +203,8 @@ function generateRssXml(files: ContentFile[], feedData: RssFeedData): string {
   const itemElements = files.map((file) => {
     const itemTitle = file.frontMatter.title || file.slug;
     const itemDescription = file.frontMatter.description || "";
-    const itemLink = `${baseUrl}/${file.slug}.html`;
-    const itemGuid = `${baseUrl}/${file.slug}.html`;
+    const itemLink = getPublicUrlForSlug(config, baseUrl, file.slug);
+    const itemGuid = itemLink;
 
     let pubDate = "";
     if (file.frontMatter.date) {

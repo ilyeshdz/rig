@@ -1,6 +1,12 @@
 import type { Plugin, PluginBuildContext } from "../core/plugins.ts";
-import type { BuildResult, Taxonomy, TaxonomyTerm } from "../types/index.ts";
+import type {
+  BuildResult,
+  Config,
+  Taxonomy,
+  TaxonomyTerm,
+} from "../types/index.ts";
 import { CollectionManager } from "../core/collections.ts";
+import { getPublicPathForSlug } from "../core/routing.ts";
 
 export interface TaxonomyOptions {
   collections?: string[];
@@ -97,6 +103,7 @@ export function createTaxonomyPlugin(options: TaxonomyOptions = {}): Plugin {
               term,
               taxonomyType,
               collection.name,
+              config,
             );
             const termFullPath = `${config.outputDir}/${termPagePath}`;
             await Deno.mkdir(termFullPath.split("/").slice(0, -1).join("/"), {
@@ -169,10 +176,11 @@ function generateTaxonomyTermHtml(
   term: TaxonomyTerm,
   taxonomyType: string,
   collectionName: string,
+  config: Config,
 ): string {
   const items = term.files.map((file) => `
     <article class="post">
-      <h2><a href="/${file.slug}.html">${
+      <h2><a href="${getPublicPathForSlug(config, file.slug)}">${
     file.frontMatter.title || file.slug
   }</a></h2>
       <p class="meta">${file.frontMatter.date || ""}</p>

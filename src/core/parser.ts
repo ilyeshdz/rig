@@ -1,5 +1,7 @@
 import { marked } from "marked";
+import { relative } from "@std/path";
 import { ContentFile, FrontMatter } from "../types/index.ts";
+import { slugFromFilePath } from "./routing.ts";
 
 export function parseFrontMatter(
   content: string,
@@ -12,7 +14,7 @@ export function parseFrontMatter(
     return {
       frontMatter: {},
       content,
-      slug: "untitled",
+      slug: slugFromFilePath(filePath),
       filePath,
     };
   }
@@ -45,9 +47,7 @@ export function parseFrontMatter(
     }
   });
 
-  const slug = frontMatter.title?.toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "") || "untitled";
+  const slug = slugFromFilePath(filePath);
 
   return {
     frontMatter,
@@ -67,16 +67,34 @@ export async function processContentFiles(
   const contentFiles: ContentFile[] = [];
 
   try {
-    for await (const entry of Deno.readDir(contentDir)) {
-      if (entry.isFile && entry.name.endsWith(".md")) {
-        const content = await Deno.readTextFile(`${contentDir}/${entry.name}`);
-        const parsed = parseFrontMatter(content, entry.name);
-        contentFiles.push(parsed);
-      }
-    }
+    await walkContentDirectory(contentDir, contentDir, contentFiles);
   } catch (error) {
     console.error("Error reading content directory:", error);
   }
 
   return contentFiles;
+}
+
+async function walkContentDirectory(
+  rootDir: string,
+  currentDir: string,
+  contentFiles: ContentFile[],
+): Promise<void> {
+  for await (const entry of Deno.readDir(currentDir)) {
+    const fullPath = `${currentDir}/${entry.name}`;
+
+    if (entry.isDirectory) {
+      await walkContentDirectory(rootDir, fullPath, contentFiles);
+      continue;
+    }
+
+    if (!entry.isFile || !entry.name.endsWith(".md")) {
+      continue;
+    }
+
+    const content = await Deno.readTextFile(fullPath);
+    const relativePath = relative(rootDir, fullPath).replaceAll("\\", "/");
+    const parsed = parseFrontMatter(content, relativePath);
+    contentFiles.push(parsed);
+  }
 }

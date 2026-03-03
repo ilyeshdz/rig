@@ -197,6 +197,7 @@ export class PluginManager {
       ? plugin as Plugin
       : normalizePlugin(plugin as PluginManifest);
 
+    this.removePluginHooks(normalized.name);
     this.plugins.set(normalized.name, normalized);
 
     const hooks: Array<{ name: HookName; fn: Function; priority: number }> = [];
@@ -295,14 +296,8 @@ export class PluginManager {
     const plugin = this.plugins.get(pluginName);
     if (!plugin) return false;
 
+    this.removePluginHooks(pluginName);
     this.plugins.delete(pluginName);
-
-    for (const [hookName, handlers] of this.hookHandlers) {
-      const index = handlers.findIndex((h) => h.plugin.name === pluginName);
-      if (index !== -1) {
-        handlers.splice(index, 1);
-      }
-    }
 
     console.log(`🔌 Unregistered plugin: ${pluginName}`);
     return true;
@@ -395,6 +390,9 @@ export class PluginManager {
     }
 
     this.plugins.clear();
+    for (const handlers of this.hookHandlers.values()) {
+      handlers.length = 0;
+    }
     this.initialized = false;
   }
 
@@ -404,6 +402,16 @@ export class PluginManager {
 
   get isInitialized(): boolean {
     return this.initialized;
+  }
+
+  private removePluginHooks(pluginName: string): void {
+    for (const handlers of this.hookHandlers.values()) {
+      for (let index = handlers.length - 1; index >= 0; index--) {
+        if (handlers[index].plugin.name === pluginName) {
+          handlers.splice(index, 1);
+        }
+      }
+    }
   }
 }
 

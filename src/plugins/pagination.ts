@@ -6,6 +6,7 @@ import type {
   PaginatedContent,
 } from "../types/index.ts";
 import { CollectionManager } from "../core/collections.ts";
+import { getPublicPathForSlug } from "../core/routing.ts";
 
 export interface PaginationOptions {
   collections?: string[];
@@ -120,7 +121,7 @@ function generatePaginationHtml(
 
   const items = files.map((file) => `
     <article class="post">
-      <h2><a href="/${file.slug}.html">${
+      <h2><a href="${getPublicPathForSlug(config, file.slug)}">${
     file.frontMatter.title || file.slug
   }</a></h2>
       <p class="meta">${file.frontMatter.date || ""}</p>

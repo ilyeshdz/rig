@@ -1,0 +1,12 @@
+contentDir = "content"
+templateDir = "templates"
+outputDir = "dist"
+
+plugins = [
+  "sitemap",
+  { from = "./plugins/playground-plugin.ts", options = { markerFile = "plugin-ok.txt" } }
+]
+
+[routing]
+mode = "file"
+style = "directory"

@@ -1,5 +1,6 @@
 import type { Plugin, PluginBuildContext } from "../core/plugins.ts";
 import type { BuildResult } from "../types/index.ts";
+import { getPublicUrlForSlug } from "../core/routing.ts";
 
 export interface SitemapOptions {
   changefreq?:
@@ -36,13 +37,20 @@ export function createSitemapPlugin(options: SitemapOptions = {}): Plugin {
       }
 
       const sitemapUrls: string[] = [];
+      const seenUrls: Set<string> = new Set();
 
       // Add homepage
-      sitemapUrls.push(createSitemapEntry(baseUrl, changefreq, priority));
+      const homeUrl = baseUrl.replace(/\/+$/, "");
+      sitemapUrls.push(createSitemapEntry(homeUrl, changefreq, priority));
+      seenUrls.add(normalizeUrlForDedup(homeUrl));
 
       // Add all content pages
       for (const file of files) {
-        const url = `${baseUrl}/${file.slug}.html`;
+        const url = getPublicUrlForSlug(config, baseUrl, file.slug);
+        const dedupKey = normalizeUrlForDedup(url);
+        if (seenUrls.has(dedupKey)) {
+          continue;
+        }
 
         // Skip if path is in exclude list
         if (excludePaths.some((path) => url.includes(path))) {
@@ -88,6 +96,7 @@ export function createSitemapPlugin(options: SitemapOptions = {}): Plugin {
         sitemapUrls.push(
           createSitemapEntry(url, pageChangefreq, pagePriority, lastmod),
         );
+        seenUrls.add(dedupKey);
       }
 
       // Generate sitemap XML
@@ -140,6 +149,14 @@ function escapeXml(text: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function normalizeUrlForDedup(url: string): string {
+  if (url.endsWith("/") && !url.endsWith("://")) {
+    return url.replace(/\/+$/, "");
+  }
+
+  return url;
 }
 
 // Export a default plugin instance

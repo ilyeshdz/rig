@@ -33,6 +33,7 @@ to extend.
 ## Core Features
 
 - Markdown content with frontmatter support
+- File-based routing derived from `content/` paths
 - Lightweight template syntax (variables, conditionals, loops)
 - Plugin lifecycle hooks
 - Official plugins:
@@ -102,23 +103,35 @@ rig/
 │   ├── integration/
 │   └── benchmarks/
 ├── playground/
-├── deno.json
+├── rig.toml
+├── deno.json            # optional fallback config location
 └── README.md
 ```
 
 ## Configuration
 
-Configure Rig in `deno.json`:
+Configure Rig in `rig.toml`:
 
-```json
-{
-  "rig": {
-    "contentDir": "content",
-    "templateDir": "templates",
-    "outputDir": "dist"
-  }
-}
+```toml
+contentDir = "content"
+templateDir = "templates"
+outputDir = "dist"
+
+plugins = [
+  "sitemap",
+  { name = "rss", options = { title = "Rig Blog", baseUrl = "https://example.com" } },
+  { from = "https://example.com/plugin.ts", export = "default" },
+  { from = "jsr:@scope/rig-plugin" },
+  { from = "npm:my-rig-plugin" }
+]
+
+[routing]
+mode = "file"      # file-based routing (default)
+style = "html"     # "html" => post.html, "directory" => post/index.html
 ```
+
+Rig checks `rig.toml` first, then falls back to `deno.json` (`rig` key) for
+backward compatibility.
 
 ## Template Syntax
 

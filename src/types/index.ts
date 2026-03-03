@@ -3,6 +3,23 @@ export interface Config {
   templateDir: string;
   outputDir: string;
   collections?: Record<string, CollectionConfig>;
+  routing?: RoutingConfig;
+  plugins?: PluginConfigEntry[];
+}
+
+export interface RoutingConfig {
+  mode?: "file";
+  style?: "html" | "directory";
+}
+
+export type PluginConfigEntry = string | PluginConfigObject;
+
+export interface PluginConfigObject {
+  name?: string;
+  from?: string;
+  export?: string;
+  factory?: string;
+  options?: Record<string, unknown>;
 }
 
 export interface CollectionConfig {

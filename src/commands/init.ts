@@ -43,6 +43,31 @@ export const initCommand = new Command()
         }
       }
 
+      const rigToml = `contentDir = "${config.contentDir}"
+templateDir = "${config.templateDir}"
+outputDir = "${config.outputDir}"
+
+# Configure plugins with names (official), URLs, or jsr:/npm: specifiers.
+# Example:
+# plugins = [
+#   "sitemap",
+#   { name = "rss", options = { title = "My Site", baseUrl = "https://example.com" } },
+#   { from = "https://example.com/my-plugin.ts", export = "default" }
+# ]
+
+[routing]
+mode = "file"
+style = "html"
+`;
+
+      const shouldWriteRigToml = options.force || !await fileExists("rig.toml");
+      if (shouldWriteRigToml) {
+        await Deno.writeTextFile("rig.toml", rigToml);
+        console.log("⚙️  Created config: rig.toml");
+      } else {
+        console.log("⚠️  Config already exists: rig.toml");
+      }
+
       // Create a basic template
       const basicTemplate = `<!DOCTYPE html>
 <html lang="en">
@@ -166,3 +191,15 @@ Happy building! 🎉`;
       Deno.exit(1);
     }
   });
+
+async function fileExists(path: string): Promise<boolean> {
+  try {
+    await Deno.stat(path);
+    return true;
+  } catch (error) {
+    if (error instanceof Deno.errors.NotFound) {
+      return false;
+    }
+    throw error;
+  }
+}

@@ -13,9 +13,14 @@ import {
 } from "./parser.ts";
 import { loadTemplate, renderTemplate } from "./template.ts";
 import { copyStaticAssets } from "./assets.ts";
-import { globalPluginManager } from "./plugins.ts";
-import type { PluginBuildContext, PluginRenderContext } from "./plugins.ts";
+import {
+  type PluginBuildContext,
+  PluginManager,
+  type PluginRenderContext,
+} from "./plugins.ts";
 import { CollectionManager } from "./collections.ts";
+import { registerConfiguredPlugins } from "./plugin_loader.ts";
+import { getOutputPathForSlug } from "./routing.ts";
 
 export interface WatchOptions {
   onUpdate?: (update: DevServerUpdate) => void | Promise<void>;
@@ -24,7 +29,7 @@ export interface WatchOptions {
 
 export class Builder {
   private config: Config;
-  private pluginManager = globalPluginManager;
+  private pluginManager = new PluginManager();
   private collectionManager: CollectionManager;
   private contentCache: Map<string, ContentFile> = new Map();
   private layoutTemplate = "";
@@ -38,6 +43,7 @@ export class Builder {
     const { verbose, clean = true } = options;
     const startTime = Date.now();
 
+    await registerConfiguredPlugins(this.config, this.pluginManager);
     await this.pluginManager.initialize(this.config);
 
     if (verbose) {
@@ -333,7 +339,7 @@ export class Builder {
     );
     finalHtml = afterRenderResult.html;
 
-    let outputPath = `${this.config.outputDir}/${file.slug}.html`;
+    let outputPath = getOutputPathForSlug(this.config, file.slug);
 
     const beforeWriteContext = {
       config: this.config,
@@ -407,7 +413,7 @@ export class Builder {
         };
       }
 
-      const outputPath = `${this.config.outputDir}/${cached.slug}.html`;
+      const outputPath = getOutputPathForSlug(this.config, cached.slug);
       this.contentCache.delete(absolutePath);
 
       try {

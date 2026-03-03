@@ -37,7 +37,7 @@ This is a test.`;
     await builder.build({ config, clean: true, verbose: false });
 
     // Verify output
-    const outputPath = `${outputDir}/test-page.html`;
+    const outputPath = `${outputDir}/test.html`;
     const output = await Deno.readTextFile(outputPath);
 
     // Check if template was rendered correctly
@@ -49,6 +49,51 @@ This is a test.`;
     console.log("✅ Integration test passed");
   } finally {
     // Cleanup
+    await Deno.remove(testDir, { recursive: true });
+  }
+});
+
+Deno.test("Builder - file-based routing with directory style", async () => {
+  const testDir = Deno.makeTempDirSync();
+  const contentDir = `${testDir}/content`;
+  const templateDir = `${testDir}/templates`;
+  const outputDir = `${testDir}/dist`;
+
+  await Deno.mkdir(`${contentDir}/blog`, { recursive: true });
+  await Deno.mkdir(templateDir, { recursive: true });
+
+  await Deno.writeTextFile(
+    `${templateDir}/layout.html`,
+    "<html><head><title><%= title %></title></head><body><%= content %></body></html>",
+  );
+
+  await Deno.writeTextFile(
+    `${contentDir}/blog/my-post.md`,
+    `---
+title: "Title should not affect route"
+---
+
+# Hello`,
+  );
+
+  try {
+    const config = {
+      contentDir,
+      templateDir,
+      outputDir,
+      routing: {
+        mode: "file" as const,
+        style: "directory" as const,
+      },
+    };
+    const builder = new Builder(config);
+    await builder.build({ config, clean: true, verbose: false });
+
+    const generatedPath = `${outputDir}/blog/my-post/index.html`;
+    const generatedHtml = await Deno.readTextFile(generatedPath);
+
+    assertEquals(generatedHtml.includes("Title should not affect route"), true);
+  } finally {
     await Deno.remove(testDir, { recursive: true });
   }
 });
