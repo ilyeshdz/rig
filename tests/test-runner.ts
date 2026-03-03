@@ -1,6 +1,6 @@
 #!/usr/bin/env -S deno run --allow-read --allow-write --allow-env --allow-run
 
-import { runAllBenchmarks } from "./benchmarks/performance.test.ts";
+import { runAllBenchmarks } from "./benchmarks/performance_bench.ts";
 
 console.log("🧪 Running Rig Test Suite\n");
 
@@ -17,14 +17,22 @@ console.log(`\n✅ Unit tests completed with exit code: ${unitTestCode}`);
 
 console.log("2️⃣  Running integration tests...");
 const integrationTestCmd = new Deno.Command("deno", {
-  args: ["test", "integration/", "--allow-read", "--allow-write", "--allow-env"],
+  args: [
+    "test",
+    "integration/",
+    "--allow-read",
+    "--allow-write",
+    "--allow-env",
+  ],
   stdout: "piped",
   stderr: "piped",
 });
 const integrationTestOutput = await integrationTestCmd.output();
 const integrationTestCode = integrationTestOutput.code;
 
-console.log(`\n✅ Integration tests completed with exit code: ${integrationTestCode}`);
+console.log(
+  `\n✅ Integration tests completed with exit code: ${integrationTestCode}`,
+);
 
 console.log("3️⃣  Running performance benchmarks...");
 await runAllBenchmarks();
