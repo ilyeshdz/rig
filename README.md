@@ -133,13 +133,38 @@ rig dev --open      # Auto-open browser
 
 ## Performance
 
-Rig is designed for speed:
+Rig is designed for speed. Here's what you can expect:
+
+### Core Operations (per operation)
+
+| Operation | Time | Throughput |
+|-----------|------|------------|
+| Markdown Parsing | ~946µs | 1,057 ops/sec |
+| Template Rendering | ~581µs | 1,722 ops/sec |
+| Full Build (10 files) | ~2.5ms | 397 ops/sec |
+
+### Site Scalability
 
 | Site Size | Files | Avg Time/File | Throughput |
 |-----------|-------|---------------|------------|
-| Small     | 10    | ~2.5ms        | 400/sec    |
-| Medium    | 100   | ~3.2ms        | 312/sec    |
-| Large     | 1000  | ~4.1ms        | 244/sec    |
+| Small | 10 | ~2.5ms | 400/sec |
+| Medium | 100 | ~3.2ms | 312/sec |
+| Large | 1000 | ~4.1ms | 244/sec |
+
+### Plugin System
+
+The plugin system is highly optimized:
+
+| Operation | Time | Throughput |
+|-----------|------|------------|
+| Create PluginManager | ~265µs | 3,776/sec |
+| Register 1 plugin | ~15ms | 68/sec |
+| Register 10 plugins | ~485µs | 2,061/sec |
+| executeHook (no plugins) | ~57µs | 17,680/sec |
+| executeHook (1 plugin) | ~108µs | 9,229/sec |
+| executeHook (5 plugins) | ~166µs | 6,022/sec |
+| getPlugin lookup | ~3.1µs | 323,800/sec |
+| hasHook check | ~151µs | 6,625/sec |
 
 ---
 
@@ -150,7 +175,9 @@ Rig is designed for speed:
 deno test tests/ --allow-read --allow-write --allow-env
 
 # Run benchmarks
-deno bench tests/benchmarks/deno-native.test.ts
+deno bench tests/benchmarks/              # All benchmarks
+deno bench tests/benchmarks/deno-native.test.ts  # Core operations
+deno bench tests/benchmarks/plugins.test.ts       # Plugin system
 ```
 
 ---

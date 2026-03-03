@@ -156,41 +156,32 @@ export class PluginManager {
       ? plugin as Plugin 
       : normalizePlugin(plugin as PluginManifest);
     
-    if (this.plugins.has(normalized.name)) {
-      console.warn(`⚠️  Plugin ${normalized.name} is already registered, replacing...`);
-    }
-    
     this.plugins.set(normalized.name, normalized);
-    this.registerHooks(normalized);
     
-    console.log(`🔌 Registered plugin: ${normalized.name} v${normalized.version}`);
-  }
-  
-  private registerHooks(plugin: Plugin): void {
     const hooks: Array<{ name: HookName; fn: Function; priority: number }> = [];
     
-    if (plugin.register) hooks.push({ name: "register", fn: plugin.register, priority: 100 });
-    if (plugin.init) hooks.push({ name: "init", fn: plugin.init, priority: 100 });
-    if (plugin.beforeBuild) hooks.push({ name: "beforeBuild", fn: plugin.beforeBuild, priority: 50 });
-    if (plugin.afterBuild) hooks.push({ name: "afterBuild", fn: plugin.afterBuild, priority: -50 });
-    if (plugin.beforeParse) hooks.push({ name: "beforeParse", fn: plugin.beforeParse, priority: 50 });
-    if (plugin.afterParse) hooks.push({ name: "afterParse", fn: plugin.afterParse, priority: -50 });
-    if (plugin.beforeRender) hooks.push({ name: "beforeRender", fn: plugin.beforeRender, priority: 50 });
-    if (plugin.afterRender) hooks.push({ name: "afterRender", fn: plugin.afterRender, priority: -50 });
-    if (plugin.beforeWrite) hooks.push({ name: "beforeWrite", fn: plugin.beforeWrite, priority: 50 });
-    if (plugin.afterWrite) hooks.push({ name: "afterWrite", fn: plugin.afterWrite, priority: -50 });
-    if (plugin.onWatch) hooks.push({ name: "onWatch", fn: plugin.onWatch, priority: 0 });
-    if (plugin.beforeServe) hooks.push({ name: "beforeServe", fn: plugin.beforeServe, priority: 50 });
-    if (plugin.afterServe) hooks.push({ name: "afterServe", fn: plugin.afterServe, priority: -50 });
-    if (plugin.destroy) hooks.push({ name: "destroy", fn: plugin.destroy, priority: 0 });
+    if (normalized.register) hooks.push({ name: "register", fn: normalized.register, priority: 100 });
+    if (normalized.init) hooks.push({ name: "init", fn: normalized.init, priority: 100 });
+    if (normalized.beforeBuild) hooks.push({ name: "beforeBuild", fn: normalized.beforeBuild, priority: 50 });
+    if (normalized.afterBuild) hooks.push({ name: "afterBuild", fn: normalized.afterBuild, priority: -50 });
+    if (normalized.beforeParse) hooks.push({ name: "beforeParse", fn: normalized.beforeParse, priority: 50 });
+    if (normalized.afterParse) hooks.push({ name: "afterParse", fn: normalized.afterParse, priority: -50 });
+    if (normalized.beforeRender) hooks.push({ name: "beforeRender", fn: normalized.beforeRender, priority: 50 });
+    if (normalized.afterRender) hooks.push({ name: "afterRender", fn: normalized.afterRender, priority: -50 });
+    if (normalized.beforeWrite) hooks.push({ name: "beforeWrite", fn: normalized.beforeWrite, priority: 50 });
+    if (normalized.afterWrite) hooks.push({ name: "afterWrite", fn: normalized.afterWrite, priority: -50 });
+    if (normalized.onWatch) hooks.push({ name: "onWatch", fn: normalized.onWatch, priority: 0 });
+    if (normalized.beforeServe) hooks.push({ name: "beforeServe", fn: normalized.beforeServe, priority: 50 });
+    if (normalized.afterServe) hooks.push({ name: "afterServe", fn: normalized.afterServe, priority: -50 });
+    if (normalized.destroy) hooks.push({ name: "destroy", fn: normalized.destroy, priority: 0 });
     
     for (const { name, fn, priority } of hooks) {
       const handlers = this.hookHandlers.get(name)!;
-      handlers.push({ plugin, fn, priority });
+      handlers.push({ plugin: normalized, fn, priority });
       handlers.sort((a, b) => b.priority - a.priority);
     }
   }
-  
+
   unregister(pluginName: string): boolean {
     const plugin = this.plugins.get(pluginName);
     if (!plugin) return false;
