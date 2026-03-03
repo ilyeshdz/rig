@@ -9,7 +9,7 @@ import type {
   PluginWatchContext,
 } from "../types/index.ts";
 
-export const RIG_VERSION = "0.2.0";
+export const RIG_VERSION = "0.2.1";
 
 export const HOOK_NAMES = [
   "register",
