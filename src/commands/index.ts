@@ -2,7 +2,7 @@ import { Command } from "@cliffy/command";
 import { buildCommand, devCommand } from "./build.ts";
 import { initCommand } from "./init.ts";
 
-const VERSION = "0.2.0";
+const VERSION = "0.1.1";
 
 export const rigCommand = new Command()
   .name("rig")

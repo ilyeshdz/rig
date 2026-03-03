@@ -74,6 +74,21 @@ rig build
 rig dev
 ```
 
+## JSR Documentation
+
+Rig is published on JSR as [`@hdzilyes/rig`](https://jsr.io/@hdzilyes/rig).
+
+- Package page: `https://jsr.io/@hdzilyes/rig`
+- API docs: `https://jsr.io/@hdzilyes/rig/doc`
+- Source repository: `https://github.com/ilyeshdz/rig`
+
+### JSR Usage Example
+
+```bash
+deno run -A jsr:@hdzilyes/rig@0.1.1 init
+deno run -A jsr:@hdzilyes/rig@0.1.1 build
+```
+
 ## Typical Project Layout
 
 ```txt
