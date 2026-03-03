@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Deno
+.deno/
+deno.lock
+
+# Build output
+dist/
+build/
+.output/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage/
+
+# Temp files
+*.tmp
+*.temp
+*.log
+
+# Playground output
+playground/dist/

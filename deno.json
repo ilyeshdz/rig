@@ -1,0 +1,26 @@
+{
+  "name": "@hdzilyes/rig",
+  "version": "0.1.0",
+  "exports": {
+    ".": "./src/main.ts",
+    "./core": "./src/core/mod.ts",
+    "./types": "./src/types/index.ts"
+  },
+  "tasks": {
+    "dev": "deno run --watch src/main.ts",
+    "test": "deno test tests/ --allow-read --allow-write --allow-env",
+    "bench": "deno bench tests/benchmarks/"
+  },
+  "imports": {
+    "@cliffy/ansi": "jsr:@cliffy/ansi@1.0.0",
+    "@cliffy/command": "jsr:@cliffy/command@1.0.0",
+    "@std/assert": "jsr:@std/assert@1",
+    "@std/path": "jsr:@std/path@^1.1.4",
+    "marked": "npm:marked@^17.0.3"
+  },
+  "rig": {
+    "contentDir": "content",
+    "templateDir": "templates",
+    "outputDir": "dist"
+  }
+}
