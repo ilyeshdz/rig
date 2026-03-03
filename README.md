@@ -49,6 +49,7 @@ rig init
 rig init
 rig build
 rig dev
+rig update
 ```
 
 Useful flags:
@@ -56,6 +57,23 @@ Useful flags:
 ```bash
 rig build --verbose --no-clean
 rig dev --port 8000 --host localhost --open
+rig update
+rig update --version 0.2.1
+rig update --dry-run
+```
+
+## Updating Rig
+
+If Rig is installed globally, update it with:
+
+```bash
+rig update
+```
+
+Install a specific version:
+
+```bash
+rig update --version 0.2.1
 ```
 
 ## Configuration (`rig.toml`)

@@ -1,6 +1,7 @@
 import { Command } from "@cliffy/command";
 import { buildCommand, devCommand } from "./build.ts";
 import { initCommand } from "./init.ts";
+import { updateCommand } from "./update.ts";
 
 const VERSION = "0.2.0";
 
@@ -11,12 +12,14 @@ export const rigCommand = new Command()
   .example("Initialize a new site", "rig init")
   .example("Build the site", "rig build")
   .example("Start development mode", "rig dev")
-  .example("Build with verbose output", "rig build --verbose");
+  .example("Build with verbose output", "rig build --verbose")
+  .example("Update Rig", "rig update");
 
 // Add subcommands
 rigCommand
   .command("init", initCommand)
   .command("build", buildCommand)
-  .command("dev", devCommand);
+  .command("dev", devCommand)
+  .command("update", updateCommand);
 
 export default rigCommand;
