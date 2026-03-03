@@ -89,3 +89,34 @@ Deno.test("loadConfig - falls back to deno.json rig config", async () => {
     await Deno.remove(tempDir, { recursive: true });
   }
 });
+
+Deno.test("loadConfig - reads [rig] table from rig.toml", async () => {
+  const originalCwd = Deno.cwd();
+  const tempDir = Deno.makeTempDirSync({ prefix: "rig-config-table-" });
+
+  try {
+    Deno.chdir(tempDir);
+    await Deno.writeTextFile(
+      "rig.toml",
+      `[rig]
+contentDir = "docs-content"
+templateDir = "docs-templates"
+outputDir = "docs-dist"
+plugins = ["sitemap"]
+
+[rig.routing]
+style = "directory"
+`,
+    );
+
+    const config = await loadConfig();
+    assertEquals(config.contentDir, "docs-content");
+    assertEquals(config.templateDir, "docs-templates");
+    assertEquals(config.outputDir, "docs-dist");
+    assertEquals(config.plugins, ["sitemap"]);
+    assertEquals(config.routing, { mode: "file", style: "directory" });
+  } finally {
+    Deno.chdir(originalCwd);
+    await Deno.remove(tempDir, { recursive: true });
+  }
+});

@@ -1,4 +1,4 @@
-import { Config, DevServerUpdate } from "../types/index.ts";
+import type { Config, DevServerUpdate } from "../types/index.ts";
 
 export interface ServerOptions {
   port: number;
@@ -30,7 +30,7 @@ export async function startServer(
       return handleHmrConnection(req, clients);
     }
 
-    let filePath = normalizeRequestPath(url.pathname);
+    const filePath = normalizeRequestPath(url.pathname);
     if (filePath.includes("..")) {
       return new Response("Forbidden", { status: 403 });
     }

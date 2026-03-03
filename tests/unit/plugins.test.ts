@@ -3,13 +3,13 @@ import {
   createPluginError,
   HOOK_NAMES,
   normalizePlugin,
-  Plugin,
+  type Plugin,
   PluginManager,
-  PluginManifest,
+  type PluginManifest,
   RIG_VERSION,
   validatePlugin,
 } from "../../src/core/plugins.ts";
-import { Config } from "../../src/types/index.ts";
+import type { Config } from "../../src/types/index.ts";
 
 Deno.test("PluginManager - creates instance", () => {
   const pm = new PluginManager();
@@ -103,7 +103,7 @@ Deno.test("PluginManager - executeHook runs handlers", async () => {
     name: "exec-plugin",
     version: "1.0.0",
     description: "Execution test",
-    init: async () => {
+    init: () => {
       executed = true;
     },
   };
@@ -178,7 +178,7 @@ Deno.test("HOOK_NAMES - contains all expected hooks", () => {
 
   assertEquals(HOOK_NAMES.length, expected.length);
   expected.forEach((hook) => {
-    assertEquals(HOOK_NAMES.includes(hook as any), true);
+    assertEquals(HOOK_NAMES.includes(hook as typeof HOOK_NAMES[number]), true);
   });
 });
 

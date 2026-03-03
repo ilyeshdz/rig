@@ -5,7 +5,7 @@ import type {
   PluginConfigObject,
 } from "../types/index.ts";
 import type { Plugin } from "./plugins.ts";
-import { PluginManager, validatePlugin } from "./plugins.ts";
+import { type PluginManager, validatePlugin } from "./plugins.ts";
 import { createPaginationPlugin } from "../plugins/pagination.ts";
 import { createRssPlugin } from "../plugins/rss.ts";
 import { createSitemapPlugin } from "../plugins/sitemap.ts";

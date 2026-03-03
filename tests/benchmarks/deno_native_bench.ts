@@ -1,5 +1,3 @@
-import { assertEquals } from "@std/assert";
-
 // Test data for benchmarking
 const TEST_CONTENT_SMALL = `---
 title: "Test Page 1"
@@ -262,7 +260,7 @@ export async function benchmarkFullBuild(
 }
 
 // Run all benchmarks using Deno.bench
-Deno.bench("Markdown Parsing", async (b) => {
+Deno.bench("Markdown Parsing", (b) => {
   b.start();
   for (let i = 0; i < 1000; i++) {
     simpleMarkdownToHtml(TEST_CONTENT_MEDIUM);
@@ -270,7 +268,7 @@ Deno.bench("Markdown Parsing", async (b) => {
   b.end();
 });
 
-Deno.bench("Template Rendering", async (b) => {
+Deno.bench("Template Rendering", (b) => {
   const data = { title: "Test Title", content: "Test Content" };
   b.start();
   for (let i = 0; i < 1000; i++) {
@@ -279,7 +277,7 @@ Deno.bench("Template Rendering", async (b) => {
   b.end();
 });
 
-Deno.bench("Full Build Process", async (b) => {
+Deno.bench("Full Build Process", (b) => {
   const testFiles = Array.from({ length: 10 }, (_, i) => ({
     frontMatter: { title: `Test ${i + 1}` },
     content: TEST_CONTENT_SMALL,
@@ -299,6 +297,6 @@ Deno.bench("Full Build Process", async (b) => {
   b.end();
 });
 
-export async function runBenchmarks() {
+export function runBenchmarks() {
   console.log("Run benchmarks using: deno bench tests/benchmarks/");
 }

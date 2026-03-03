@@ -1,8 +1,7 @@
-import {
+import type {
   BuildResult,
   Config,
   ContentFile,
-  FrontMatter,
   HookContext,
   PluginBuildContext,
   PluginInitContext,
@@ -34,6 +33,8 @@ export type HookName = typeof HOOK_NAMES[number];
 export type HookFn<T extends HookContext = HookContext> = (
   context: T,
 ) => Promise<void> | void;
+
+type HookHandlerFn = (context: unknown) => Promise<unknown> | unknown;
 
 export interface HookDefinition<T extends HookContext = HookContext> {
   name: HookName;
@@ -184,7 +185,7 @@ export class PluginManager {
   private plugins: Map<string, Plugin> = new Map();
   private hookHandlers: Map<
     HookName,
-    Array<{ plugin: Plugin; fn: Function; priority: number }>
+    Array<{ plugin: Plugin; fn: HookHandlerFn; priority: number }>
   > = new Map();
   private initialized = false;
 
@@ -200,89 +201,108 @@ export class PluginManager {
     this.removePluginHooks(normalized.name);
     this.plugins.set(normalized.name, normalized);
 
-    const hooks: Array<{ name: HookName; fn: Function; priority: number }> = [];
+    const hooks: Array<
+      { name: HookName; fn: HookHandlerFn; priority: number }
+    > = [];
+    const asHookHandler = (fn: unknown): HookHandlerFn => fn as HookHandlerFn;
 
     if (normalized.register) {
-      hooks.push({ name: "register", fn: normalized.register, priority: 100 });
+      hooks.push({
+        name: "register",
+        fn: asHookHandler(normalized.register),
+        priority: 100,
+      });
     }
     if (normalized.init) {
-      hooks.push({ name: "init", fn: normalized.init, priority: 100 });
+      hooks.push({
+        name: "init",
+        fn: asHookHandler(normalized.init),
+        priority: 100,
+      });
     }
     if (normalized.beforeBuild) {
       hooks.push({
         name: "beforeBuild",
-        fn: normalized.beforeBuild,
+        fn: asHookHandler(normalized.beforeBuild),
         priority: 50,
       });
     }
     if (normalized.afterBuild) {
       hooks.push({
         name: "afterBuild",
-        fn: normalized.afterBuild,
+        fn: asHookHandler(normalized.afterBuild),
         priority: -50,
       });
     }
     if (normalized.beforeParse) {
       hooks.push({
         name: "beforeParse",
-        fn: normalized.beforeParse,
+        fn: asHookHandler(normalized.beforeParse),
         priority: 50,
       });
     }
     if (normalized.afterParse) {
       hooks.push({
         name: "afterParse",
-        fn: normalized.afterParse,
+        fn: asHookHandler(normalized.afterParse),
         priority: -50,
       });
     }
     if (normalized.beforeRender) {
       hooks.push({
         name: "beforeRender",
-        fn: normalized.beforeRender,
+        fn: asHookHandler(normalized.beforeRender),
         priority: 50,
       });
     }
     if (normalized.afterRender) {
       hooks.push({
         name: "afterRender",
-        fn: normalized.afterRender,
+        fn: asHookHandler(normalized.afterRender),
         priority: -50,
       });
     }
     if (normalized.beforeWrite) {
       hooks.push({
         name: "beforeWrite",
-        fn: normalized.beforeWrite,
+        fn: asHookHandler(normalized.beforeWrite),
         priority: 50,
       });
     }
     if (normalized.afterWrite) {
       hooks.push({
         name: "afterWrite",
-        fn: normalized.afterWrite,
+        fn: asHookHandler(normalized.afterWrite),
         priority: -50,
       });
     }
     if (normalized.onWatch) {
-      hooks.push({ name: "onWatch", fn: normalized.onWatch, priority: 0 });
+      hooks.push({
+        name: "onWatch",
+        fn: asHookHandler(normalized.onWatch),
+        priority: 0,
+      });
     }
     if (normalized.beforeServe) {
       hooks.push({
         name: "beforeServe",
-        fn: normalized.beforeServe,
+        fn: asHookHandler(normalized.beforeServe),
         priority: 50,
       });
     }
     if (normalized.afterServe) {
       hooks.push({
         name: "afterServe",
-        fn: normalized.afterServe,
+        fn: asHookHandler(normalized.afterServe),
         priority: -50,
       });
     }
     if (normalized.destroy) {
-      hooks.push({ name: "destroy", fn: normalized.destroy, priority: 0 });
+      hooks.push({
+        name: "destroy",
+        fn: asHookHandler(normalized.destroy),
+        priority: 0,
+      });
     }
 
     for (const { name, fn, priority } of hooks) {

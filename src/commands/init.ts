@@ -1,6 +1,5 @@
 import { Command } from "@cliffy/command";
 import { validateConfig } from "../core/config.ts";
-import { InitOptions } from "../types/index.ts";
 
 export const initCommand = new Command()
   .name("init")

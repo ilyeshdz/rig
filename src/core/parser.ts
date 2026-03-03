@@ -1,6 +1,6 @@
 import { marked } from "marked";
 import { relative } from "@std/path";
-import { ContentFile, FrontMatter } from "../types/index.ts";
+import type { ContentFile, FrontMatter } from "../types/index.ts";
 import { slugFromFilePath } from "./routing.ts";
 
 export function parseFrontMatter(

@@ -18,7 +18,7 @@
     "test": "deno test tests/ --allow-read --allow-write --allow-env --allow-net",
     "bench": "deno bench tests/benchmarks/ --allow-read --allow-write --allow-env",
     "bench:plugins": "deno bench tests/benchmarks/official_plugins_bench.ts --allow-read --allow-write",
-    "bench:core": "deno bench tests/benchmarks/deno_native_bench.ts tests/benchmarks/performance_bench.ts",
+    "bench:core": "deno bench tests/benchmarks/deno_native_bench.ts tests/benchmarks/performance_bench.ts --allow-read --allow-write",
     "bench:manager": "deno bench tests/benchmarks/plugin_manager_bench.ts"
   },
   "imports": {

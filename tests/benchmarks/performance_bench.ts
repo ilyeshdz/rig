@@ -1,5 +1,4 @@
 import { Builder } from "../../src/core/builder.ts";
-import { loadConfig } from "../../src/core/config.ts";
 
 interface BenchmarkResult {
   operation: string;
@@ -8,16 +7,16 @@ interface BenchmarkResult {
 }
 
 async function measurePerformance<T>(
-  operation: string,
+  _operation: string,
   fn: () => Promise<T>,
 ): Promise<{ result: T; duration: number }> {
   const start = performance.now();
-  const memBefore = Deno.memoryUsage();
+  const _memBefore = Deno.memoryUsage();
 
   const result = await fn();
 
   const end = performance.now();
-  const memAfter = Deno.memoryUsage();
+  const _memAfter = Deno.memoryUsage();
 
   return {
     result,
@@ -224,7 +223,6 @@ async function withMutedConsole<T>(fn: () => Promise<T>): Promise<T> {
 
 Deno.bench({
   name: "Builder - small site build (10 files)",
-  permissions: { read: true, write: true },
 }, async (b) => {
   await withMutedConsole(async () => {
     b.start();
@@ -235,7 +233,6 @@ Deno.bench({
 
 Deno.bench({
   name: "Builder - medium site build (100 files)",
-  permissions: { read: true, write: true },
 }, async (b) => {
   await withMutedConsole(async () => {
     b.start();

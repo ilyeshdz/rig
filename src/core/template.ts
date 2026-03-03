@@ -16,14 +16,14 @@ export function renderTemplate(
 
   result = result.replace(
     /<% if \((\w+)\) %>([\s\S]*?)<% endif %>/g,
-    (match, condition, content) => {
+    (_match, condition, content) => {
       return data[condition] ? content : "";
     },
   );
 
   result = result.replace(
     /<% for \((\w+) in (\w+)\) %>([\s\S]*?)<% endfor %>/g,
-    (match, itemVar, arrayVar, content) => {
+    (_match, itemVar, arrayVar, content) => {
       const items = data[arrayVar];
       if (!Array.isArray(items)) return "";
 

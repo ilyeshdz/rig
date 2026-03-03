@@ -1,5 +1,5 @@
 import { basename, dirname, extname, relative, resolve } from "@std/path";
-import { Config } from "../types/index.ts";
+import type { Config } from "../types/index.ts";
 import type {
   BuildOptions,
   BuildResult,

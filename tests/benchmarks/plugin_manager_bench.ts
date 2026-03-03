@@ -1,5 +1,5 @@
-import { Plugin, PluginManager } from "../../src/core/plugins.ts";
-import { Config } from "../../src/types/index.ts";
+import { type Plugin, PluginManager } from "../../src/core/plugins.ts";
+import type { Config } from "../../src/types/index.ts";
 
 const TEST_CONFIG: Config = {
   contentDir: "content",
@@ -171,7 +171,7 @@ Deno.bench("Hook execution - empty to async context", async (b) => {
   b.end();
 });
 
-export async function runPluginBenchmarks() {
+export function runPluginBenchmarks() {
   console.log(
     "Run plugin benchmarks: deno bench tests/benchmarks/plugin_manager_bench.ts",
   );

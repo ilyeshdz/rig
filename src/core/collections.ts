@@ -1,6 +1,5 @@
 import type {
   Collection,
-  CollectionConfig,
   Config,
   ContentFile,
   PaginatedContent,

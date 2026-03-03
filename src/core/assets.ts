@@ -1,4 +1,4 @@
-import { Config } from "../types/index.ts";
+import type { Config } from "../types/index.ts";
 
 const DEFAULT_STATIC_DIR = "static";
 
@@ -30,6 +30,7 @@ export async function copyStaticAssets(
   try {
     await Deno.mkdir(destDir, { recursive: true });
   } catch {
+    // Destination may already exist.
   }
 
   await copyDirectory(DEFAULT_STATIC_DIR, destDir, () => {
@@ -66,6 +67,6 @@ async function copyDirectory(
   }
 }
 
-export function getStaticAssetPaths(config: Config): string[] {
+export function getStaticAssetPaths(_config: Config): string[] {
   return [DEFAULT_STATIC_DIR];
 }
