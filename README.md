@@ -55,6 +55,25 @@ deno task test
 deno task bench
 ```
 
+## Install The CLI
+
+### Run without global install
+
+```bash
+deno run -A jsr:@hdzilyes/rig init
+deno run -A jsr:@hdzilyes/rig build
+deno run -A jsr:@hdzilyes/rig dev
+```
+
+### Install globally
+
+```bash
+deno install -gA --name rig jsr:@hdzilyes/rig
+rig init
+rig build
+rig dev
+```
+
 ## Typical Project Layout
 
 ```txt
