@@ -1,64 +1,34 @@
-<div align="center">
-
 # Rig
 
-A static site generator for people who want simple content workflows, fast
-builds, and an extensible plugin system.
+Rig is a fast, Markdown-first static site generator for Deno.
 
-[![Deno](https://img.shields.io/badge/Deno-fff?logo=deno)](https://deno.land)
-[![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?logo=typescript)](https://www.typescriptlang.org/)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+It is designed for CLI workflows: write content, run one command, ship static
+HTML.
 
-</div>
+## Why Rig
 
-## What Rig Is
+- Minimal setup and explicit behavior.
+- File-based routing by default (route comes from file path, not metadata).
+- `rig.toml` configuration with plugin loading from official names, local files,
+  URLs, `jsr:`, and `npm:` specifiers.
+- Good developer feedback loop in build and dev modes.
+- Extensible plugin lifecycle without framework lock-in.
 
-Rig is a Markdown-first static site generator built with Deno and TypeScript.
+## Core Idea
 
-You write content in `.md`, use a layout template, and Rig generates static HTML
-files in `dist/`.
+Rig keeps content simple:
 
-It is intentionally small and explicit: easy to understand, easy to change, easy
-to extend.
+1. You write Markdown files in `content/`.
+2. Rig parses frontmatter + Markdown.
+3. A layout template renders the final page.
+4. Plugins hook into parse/render/build phases.
+5. Static files are emitted to `dist/`.
 
-## Why You Might Use It
+The goal is predictable static generation with low cognitive overhead.
 
-- You want a straightforward static generator without a lot of framework
-  ceremony.
-- You prefer TypeScript + Deno tooling.
-- You want plugin hooks for things like feeds, sitemaps, pagination, and
-  taxonomy pages.
-- You care about fast local feedback while writing content.
+## Installation
 
-## Core Features
-
-- Markdown content with frontmatter support
-- File-based routing derived from `content/` paths
-- Lightweight template syntax (variables, conditionals, loops)
-- Plugin lifecycle hooks
-- Official plugins:
-  - `sitemap` for `sitemap.xml`
-  - `rss` for RSS feed generation
-  - `pagination` for paginated collection pages
-  - `taxonomy` for tags/categories pages
-- Unit, integration, and benchmark coverage
-
-## Quick Start
-
-```bash
-# Install dependencies (Deno)
-curl -fsSL https://deno.land/install.sh | sh
-
-# Run tests
-deno task test
-
-# Run all benchmarks
-deno task bench
-```
-
-## Install The CLI
-
-### Run without global install
+### Run directly
 
 ```bash
 deno run -A jsr:@hdzilyes/rig init
@@ -71,46 +41,24 @@ deno run -A jsr:@hdzilyes/rig dev
 ```bash
 deno install -gA --name rig jsr:@hdzilyes/rig
 rig init
+```
+
+## CLI Commands
+
+```bash
+rig init
 rig build
 rig dev
 ```
 
-## JSR Documentation
-
-Rig is published on JSR as [`@hdzilyes/rig`](https://jsr.io/@hdzilyes/rig).
-
-- Package page: `https://jsr.io/@hdzilyes/rig`
-- API docs: `https://jsr.io/@hdzilyes/rig/doc`
-- Source repository: `https://github.com/ilyeshdz/rig`
-
-### JSR Usage Example
+Useful flags:
 
 ```bash
-deno run -A jsr:@hdzilyes/rig@0.1.1 init
-deno run -A jsr:@hdzilyes/rig@0.1.1 build
+rig build --verbose --no-clean
+rig dev --port 8000 --host localhost --open
 ```
 
-## Typical Project Layout
-
-```txt
-rig/
-├── src/
-│   ├── core/          # parser, builder, template engine, plugins, collections
-│   ├── commands/      # CLI commands
-│   └── plugins/       # official plugins
-├── tests/
-│   ├── unit/
-│   ├── integration/
-│   └── benchmarks/
-├── playground/
-├── rig.toml
-├── deno.json            # optional fallback config location
-└── README.md
-```
-
-## Configuration
-
-Configure Rig in `rig.toml`:
+## Configuration (`rig.toml`)
 
 ```toml
 contentDir = "content"
@@ -120,37 +68,51 @@ outputDir = "dist"
 plugins = [
   "sitemap",
   { name = "rss", options = { title = "Rig Blog", baseUrl = "https://example.com" } },
-  { from = "https://example.com/plugin.ts", export = "default" },
+  { from = "./plugins/my-plugin.ts" },
+  { from = "https://example.com/remote-plugin.ts", export = "default" },
   { from = "jsr:@scope/rig-plugin" },
   { from = "npm:my-rig-plugin" }
 ]
 
 [routing]
-mode = "file"      # file-based routing (default)
-style = "html"     # "html" => post.html, "directory" => post/index.html
+mode = "file"
+style = "html" # "html" => post.html, "directory" => post/index.html
 ```
 
-Rig checks `rig.toml` first, then falls back to `deno.json` (`rig` key) for
+Rig reads `rig.toml` first, then falls back to `deno.json` (`rig` key) for
 backward compatibility.
+
+## File-Based Routing
+
+Route generation is based on content file path:
+
+- `content/index.md` -> `dist/index.html`
+- `content/blog/hello-world.md` -> `dist/blog/hello-world.html`
+
+With `style = "directory"`:
+
+- `content/blog/hello-world.md` -> `dist/blog/hello-world/index.html`
+
+Frontmatter `title` is used for rendering, not route naming.
 
 ## Template Syntax
 
-### Variables
+Variables:
 
 ```html
 <h1><%= title %></h1>
 <p><%= description %></p>
 ```
 
-### Conditionals
+Conditionals:
 
 ```html
-<% if (showSidebar) %>
-<aside>Sidebar content</aside>
+<% if (date) %>
+<p><%= date %></p>
 <% endif %>
 ```
 
-### Loops
+Loops:
 
 ```html
 <ul>
@@ -160,69 +122,72 @@ backward compatibility.
 </ul>
 ```
 
-## Performance In Real Use
+## Official Plugins
 
-Benchmarks are useful, but what matters is day-to-day behavior:
+- `sitemap`
+- `rss`
+- `pagination`
+- `taxonomy`
 
-- While writing content, rebuilds are fast enough to keep your flow intact
-  instead of waiting on tooling.
-- For small and medium sites, full builds generally feel near-instant to very
-  quick on modern laptops.
-- As content volume grows, build time increases in a predictable way rather than
-  exploding suddenly.
-- Plugin hook overhead is low, so adding official plugins does not usually make
-  builds feel heavy.
+## Benchmarks
 
-How to read this as a developer:
+The following results were measured locally on **March 3, 2026**, using:
 
-- Rig is optimized for fast iteration loops (edit -> build -> review).
-- You can scale from a handful of pages to larger collections without needing
-  architecture changes immediately.
-- Benchmark numbers should be treated as directional signals, not hard
-  guarantees for every machine/project.
+- **CPU:** Apple M2
+- **Runtime:** Deno 2.6.8 (`aarch64-apple-darwin`)
 
-## Testing and Benchmarks
+### Core Benchmarks (`deno task bench:core`)
+
+| Benchmark                               | Avg time | Iter/s |
+| --------------------------------------- | -------: | -----: |
+| Markdown Parsing                        | 955.8 µs |  1,046 |
+| Template Rendering                      | 587.7 µs |  1,701 |
+| Full Build Process                      |   3.0 ms |  338.2 |
+| Builder - small site build (10 files)   |   4.9 ms |  203.1 |
+| Builder - medium site build (100 files) |  38.5 ms |   26.0 |
+
+### Plugin Manager Benchmarks (`deno task bench:manager`)
+
+| Benchmark                                   | Avg time |  Iter/s |
+| ------------------------------------------- | -------: | ------: |
+| PluginManager - create instance             | 258.6 µs |   3,867 |
+| PluginManager - executeHook with no plugins |  63.6 µs |  15,730 |
+| PluginManager - executeHook with 10 plugins | 145.7 µs |   6,864 |
+| PluginManager - getPlugin lookup            |   3.2 µs | 314,800 |
+
+These numbers are directional and machine-dependent, but they show that Rig is
+optimized for fast local iteration and low plugin overhead.
+
+## Development
+
+Run tests:
 
 ```bash
-# Test suite
 deno task test
+```
 
-# All benchmarks
+Run benchmarks:
+
+```bash
 deno task bench
-
-# Core parsing/rendering benchmarks
 deno task bench:core
-
-# Official plugin benchmarks
-deno task bench:plugins
-
-# Plugin manager internals
 deno task bench:manager
 ```
 
-## Documentation Site
+## Project Structure
 
-Rig now includes a Docusaurus site in `docs/`.
-
-```bash
-cd docs
-npm install
-npm run start
+```txt
+src/
+  commands/     CLI commands
+  core/         parser, builder, config, server, plugin system
+  plugins/      official plugins
+tests/
+  unit/
+  integration/
+  benchmarks/
+playground/     real-world local test bed
 ```
-
-This site includes guides for setup, configuration, templating, plugins,
-incremental dev with HMR, testing, architecture, and contribution workflow.
-
-## Contributing
-
-Contributions are welcome.
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feat/your-change`)
-3. Commit your changes (`git commit -m 'feat: add X'`)
-4. Push to your branch
-5. Open a pull request
 
 ## License
 
-MIT License — see [LICENSE](LICENSE).
+MIT - see `LICENSE`.
